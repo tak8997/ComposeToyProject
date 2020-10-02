@@ -1,4 +1,4 @@
-package com.tak8997.github.rxtest
+package com.tak8997.github.composetoyproject
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

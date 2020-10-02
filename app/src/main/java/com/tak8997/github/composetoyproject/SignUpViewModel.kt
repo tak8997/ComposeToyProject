@@ -1,4 +1,4 @@
-package com.tak8997.github.rxtest
+package com.tak8997.github.composetoyproject
 
 import android.util.Log
 import io.reactivex.Observable
