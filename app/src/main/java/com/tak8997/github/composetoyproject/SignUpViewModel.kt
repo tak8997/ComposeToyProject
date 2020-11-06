@@ -1,6 +1,9 @@
 package com.tak8997.github.composetoyproject
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.Observables
@@ -21,8 +24,8 @@ internal interface SignUpViewModel {
     }
 
     interface Outputs {
-        fun errorString(): Observable<String>
-        fun formIsValid(): Observable<Boolean>
+        fun errorString(): LiveData<String>
+        fun formIsValid(): LiveData<Boolean>
         fun formSubmitting(): Observable<Boolean>
         fun signupSuccess(): Observable<Unit>
     }
@@ -59,17 +62,17 @@ internal interface SignUpViewModel {
             }
         }
 
-        private lateinit var errorString: Observable<String>
+        private lateinit var errorString: LiveData<String>
         private val signupSuccess = PublishSubject.create<Unit>()
         private val formSubmitting = BehaviorSubject.create<Boolean>()
-        private val formIsValid = BehaviorSubject.create<Boolean>()
+        private val formIsValid = MutableLiveData<Boolean>()
 
         val outputs = object : Outputs {
-            override fun errorString(): Observable<String> {
+            override fun errorString(): LiveData<String> {
                 return errorString
             }
 
-            override fun formIsValid(): Observable<Boolean> {
+            override fun formIsValid(): LiveData<Boolean> {
                 return formIsValid
             }
 
@@ -92,7 +95,12 @@ internal interface SignUpViewModel {
 
             signUpData
                 .map { it.isValid() }
-                .subscribeBy { formIsValid.onNext(it) }
+                .subscribeBy(
+                    onNext = {
+                        Log.d("MY_LOG","it : ${it}")
+                        formIsValid.value = it },
+                    onError = defaultErrorHandler()
+                )
                 .addTo(disposables)
 
             signUpData
@@ -111,6 +119,8 @@ internal interface SignUpViewModel {
             errorString = signupError
                 .takeUntil(signupSuccess)
                 .map(ErrorEnvelope::errorMessage)
+                .toFlowable(BackpressureStrategy.BUFFER)
+                .toLiveData()
 
             signupSuccess
                 .subscribeBy { Log.d("MY_LOG", "send Event : [signup success]") }

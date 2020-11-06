@@ -5,6 +5,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.activity_sign_up.*
 
@@ -30,16 +31,18 @@ internal class SignUpActivity : AppCompatActivity() {
                 .subscribeBy { btnSignUp.isEnabled = !it }
 
             formIsValid()
-                .subscribeBy { btnSignUp.isEnabled = it }
+                .observe(this@SignUpActivity, Observer {
+                    btnSignUp.isEnabled = it
+                })
 
             errorString()
-                .subscribeBy {
+                .observe(this@SignUpActivity, Observer {
                     Toast.makeText(
                         this@SignUpActivity,
                         it,
                         Toast.LENGTH_LONG
                     ).show()
-                }
+                })
         }
 
         setupListener()
